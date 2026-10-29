@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -56,8 +56,8 @@ namespace Oxide.Core.SQLite.Libraries
             /// </summary>
             public bool NonQuery { get; internal set; }
 
-            private SQLiteCommand _cmd;
-            private SQLiteConnection _connection;
+            private SqliteCommand _cmd;
+            private SqliteConnection _connection;
 
             private void Cleanup()
             {
@@ -81,7 +81,7 @@ namespace Oxide.Core.SQLite.Libraries
                         throw new Exception("Connection is null");
                     }
 
-                    _connection = (SQLiteConnection)Connection.Con;
+                    _connection = (SqliteConnection)Connection.Con;
                     if (_connection.State == ConnectionState.Closed)
                     {
                         _connection.Open();
@@ -96,7 +96,7 @@ namespace Oxide.Core.SQLite.Libraries
                     }
                     else
                     {
-                        using (SQLiteDataReader reader = _cmd.ExecuteReader())
+                        using (SqliteDataReader reader = _cmd.ExecuteReader())
                         {
                             list = new List<Dictionary<string, object>>();
                             while (reader.Read())
@@ -110,7 +110,11 @@ namespace Oxide.Core.SQLite.Libraries
                             }
                         }
                     }
-                    lastInsertRowId = _connection.LastInsertRowId;
+                    using (SqliteCommand rowId = _connection.CreateCommand())
+                    {
+                        rowId.CommandText = "SELECT last_insert_rowid()";
+                        lastInsertRowId = (long)rowId.ExecuteScalar()!;
+                    }
                     Cleanup();
                 }
                 catch (Exception ex)
@@ -222,7 +226,7 @@ namespace Oxide.Core.SQLite.Libraries
                 throw new Exception("Only access to oxide directory!");
             }
 
-            string conStr = $"Data Source={filename};Version=3;";
+            string conStr = $"Data Source={filename}";
             Connection connection;
             if (_connections.TryGetValue(conStr, out connection))
             {
@@ -239,7 +243,7 @@ namespace Oxide.Core.SQLite.Libraries
                 connection = new Connection(conStr, persistent)
                 {
                     Plugin = plugin,
-                    Con = new SQLiteConnection(conStr)
+                    Con = new SqliteConnection(conStr)
                 };
                 _connections[conStr] = connection;
             }

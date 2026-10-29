@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Oxide.Core.Extensions;
 
 namespace Oxide.Core.SQLite
@@ -41,18 +42,20 @@ namespace Oxide.Core.SQLite
         /// </summary>
         public SQLiteExtension(ExtensionManager manager) : base(manager)
         {
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
-            {
-                string extDir = Interface.Oxide.ExtensionDirectory;
-                string configPath = Path.Combine(extDir, "System.Data.SQLite.dll.config");
-                if (File.Exists(configPath) && !new[] { "target=\"x64", "target=\"./x64" }.Any(File.ReadAllText(configPath).Contains))
-                {
-                    return;
-                }
+            NativeLibrary.SetDllImportResolver(typeof(SQLitePCL.SQLite3Provider_e_sqlite3).Assembly, ResolveNative);
+            SQLitePCL.Batteries_V2.Init();
+        }
 
-                File.WriteAllText(configPath, $"<configuration>\n<dllmap dll=\"sqlite3\" target=\"{extDir}/x86/libsqlite3.so\" os=\"!windows,osx\" cpu=\"x86\" />\n" +
-                    $"<dllmap dll=\"sqlite3\" target=\"{extDir}/x64/libsqlite3.so\" os=\"!windows,osx\" cpu=\"x86-64\" />\n</configuration>");
+        private static IntPtr ResolveNative(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+        {
+            if (libraryName != "e_sqlite3")
+            {
+                return IntPtr.Zero;
             }
+
+            string fileName = OperatingSystem.IsWindows() ? "e_sqlite3.dll" : OperatingSystem.IsMacOS() ? "libe_sqlite3.dylib" : "libe_sqlite3.so";
+            string path = Path.Combine(Interface.Oxide.ExtensionDirectory, "x64", fileName);
+            return NativeLibrary.TryLoad(path, out IntPtr handle) ? handle : IntPtr.Zero;
         }
 
         /// <summary>

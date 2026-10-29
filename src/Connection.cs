@@ -1,5 +1,5 @@
 using Oxide.Core.Plugins;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace Oxide.Ext.SQLite
 {
@@ -7,7 +7,7 @@ namespace Oxide.Ext.SQLite
     {
         internal string ConnectionString { get; set; }
         internal bool ConnectionPersistent { get; set; }
-        internal SQLiteConnection Con { get; set; }
+        internal SqliteConnection Con { get; set; }
         internal Plugin Plugin { get; set; }
         public long LastInsertRowId { get; internal set; }
 

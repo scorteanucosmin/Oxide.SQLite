@@ -1,7 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-  <Import Project="..\netfx.props" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Version>2.0.0</Version>
     <AssemblyName>Oxide.SQLite</AssemblyName>
@@ -12,26 +9,12 @@
     <PackageIconUrl>icon.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
-    <TargetFrameworks>net48;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <NoWarn>NU1701</NoWarn>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Oxide.Core" Version="2.0.*" />
-    <Reference Include="System.Data.SQLite">
-      <HintPath>Dependencies\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Content Include="Dependencies\*.*" PackagePath="lib\any" />
-    <Content Include="Dependencies\x64\*.*" PackagePath="lib\any\x64" />
-    <Content Include="Dependencies\x86\*.*" PackagePath="lib\any\x86" />
+    <ProjectReference Include="$(OxideRoot)Oxide.Common\src\Oxide.Common.csproj" Private="false" />
+    <ProjectReference Include="$(OxideRoot)Oxide.Core\src\Oxide.Core.csproj" Private="false" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
     <None Include="..\resources\icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
-    <ItemGroup>
-      <ReferencePath Condition="'%(FileName)' == 'Oxide.References'">
-        <Aliases>References</Aliases>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>
 </Project>
